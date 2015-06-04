@@ -1,0 +1,5 @@
+{ "projectSlug": "sample"
+, "projectName": "Sample"
+, "projectDescr": "A sample project."
+, "projectImgs": ["0001.png", "0002.jpg"]
+}

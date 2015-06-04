@@ -13,7 +13,16 @@ Executable cortana-portfolio
   Main-Is:              Main.hs
   Default-Language:     Haskell2010
   GHC-Options:          -Wall
-  Build-Depends:        base >= 4 && < 5, Spock, containers
+  Build-Depends:        base >= 4 && < 5,
+                        Spock,
+                        unordered-containers,
+                        bytestring,
+                        text,
+                        aeson,
+                        transformers,
+                        uuid,
+                        filestore,
+                        lucid
 
 Source-Repository head
   Type:                 git

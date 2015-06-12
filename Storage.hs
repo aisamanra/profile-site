@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
@@ -11,8 +10,9 @@ import Control.Exception (catch)
 import Data.Aeson
 import Data.ByteString.Lazy (ByteString)
 import Data.FileStore
+import Data.List (isSuffixOf)
 import Data.Maybe (catMaybes)
-import Data.Monoid ((<>))
+import Data.Monoid (Monoid, (<>))
 import Data.String (IsString)
 import Data.Text (Text)
 --import Data.UUID.V4
@@ -32,7 +32,10 @@ data Project = Project
   , projectName  :: Text
   , projectDescr :: Text
   , projectImgs  :: [String]
-  } deriving (Eq, Show, Generic, FromJSON, ToJSON)
+  } deriving (Eq, Show, Generic)
+
+instance FromJSON Project where
+instance ToJSON Project where
 
 recover :: forall a. IO (Maybe a) -> IO (Maybe a)
 recover action = action `catch` go
@@ -61,6 +64,16 @@ getProject name =
 
 getImage :: String -> IO ByteString
 getImage name = retrieve portfolioStore ("images" </> name) Nothing
+
+getType :: String -> Text
+getType s
+  | ".png" `isSuffixOf` s = "image/png"
+  | ".jpg" `isSuffixOf` s = "image/jpeg"
+  | ".gif" `isSuffixOf` s = "image/gif"
+  | otherwise = error "unrecognized image type requested"
+
+getCSS :: IO ByteString
+getCSS = retrieve portfolioStore ("css") Nothing
 
 {-
 imageType :: String -> ImageType

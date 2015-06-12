@@ -3,11 +3,8 @@
 
 module Main where
 
-import           Control.Monad.IO.Class (liftIO)
-import           Data.Text (Text)
-import qualified Data.Text as T
-import           Data.HashMap.Strict (toList)
-import           Lucid (renderBS)
+import           Control.Monad.IO.Class (MonadIO, liftIO)
+import           Lucid (Html, renderBS)
 import qualified Storage   as S
 import qualified Templates as T
 import           Web.Spock.Safe
@@ -32,20 +29,35 @@ projectR = "project" <//> var
 loginR :: Path '[]
 loginR = "login"
 
+imageR :: Path '[String]
+imageR = "imgs" <//> var
+
 editR :: Path '[]
 editR = "edit"
 
 editProjectR :: Path '[String]
 editProjectR = "edit" <//> "project" <//> var
 
+lucid :: MonadIO m => Html () -> ActionT m a
+lucid = lazyBytes . renderBS
+
 main :: IO ()
 main = runSpock 8080 $ spockT id $ do
   get root $ do
     projects <- liftIO S.getAllProjects
-    lazyBytes (renderBS $ T.projectList projects)
+    lucid (T.projectList projects)
   get projectR $ \ p -> do
-    project <- liftIO (S.getProject p)
-    text (T.pack $ show project)
+    Just project <- liftIO (S.getProject p)
+    lucid (T.project project)
+  get loginR $ do
+    lucid T.loginPage
+  get imageR $ \ i -> do
+    setHeader "Content-Type" (S.getType i)
+    d <- liftIO (S.getImage i)
+    lazyBytes d
+  get "css" $ do
+    setHeader "Content-Type" "text/css"
+    liftIO S.getCSS >>= lazyBytes
 {-
   post root $ do
     fs <- files
